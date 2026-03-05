@@ -1,0 +1,56 @@
+<section class="section-search">
+    <div class="container">
+        <div class="page-title-block">
+            <h1 class="page-title">🔍 Пошук за командою</h1>
+        </div>
+
+        <form action="/search" method="GET" class="search-form">
+            <input 
+                type="text" 
+                name="team" 
+                class="search-input" 
+                placeholder="Введіть назву команди..."
+                value="<%= typeof query !== 'undefined' ? query : '' %>"
+            />
+            <button type="submit" class="btn btn-primary">Шукати</button>
+        </form>
+
+        <% if (typeof results !== 'undefined' && results.length > 0) { %>
+            <p class="search-count">Знайдено матчів: <strong><%= results.length %></strong></p>
+            <div class="schedule-table-wrapper">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Команда 1</th>
+                            <th></th>
+                            <th>Команда 2</th>
+                            <th>Місце</th>
+                            <th>Результат</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% results.forEach(function(game) { %>
+                        <tr class="schedule-row">
+                            <td class="cell-date"><%= game.date %></td>
+                            <td class="cell-team"><%= game.team1.logo %> <%= game.team1.name %></td>
+                            <td class="cell-vs">vs</td>
+                            <td class="cell-team"><%= game.team2.logo %> <%= game.team2.name %></td>
+                            <td class="cell-location"><%= game.location %></td>
+                            <td class="cell-result">
+                                <% if (game.result) { %>
+                                    <span class="result-badge"><%= game.result.team1Score %> : <%= game.result.team2Score %></span>
+                                <% } else { %>
+                                    <span class="result-pending">Очікується</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else if (typeof query !== 'undefined' && query !== '') { %>
+            <p class="search-empty">Нічого не знайдено для &laquo;<strong><%= query %></strong>&raquo;</p>
+        <% } %>
+    </div>
+</section>

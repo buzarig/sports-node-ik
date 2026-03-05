@@ -1,0 +1,27 @@
+{
+    "name": "team-site",
+    "version": "1.0.0",
+    "description": "Laboratory work 2 - Node.js + Express + EJS team website",
+    "main": "src/app.js",
+    "type": "commonjs",
+    "scripts": {
+        "start": "node src/app.js",
+        "dev": "nodemon src/app.js"
+    },
+    "keywords": [
+        "nodejs",
+        "express",
+        "ejs",
+        "mvc",
+        "laboratory"
+    ],
+    "author": "IK-41",
+    "license": "ISC",
+    "dependencies": {
+        "ejs": "^3.1.9",
+        "express": "^4.18.2"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.3"
+    }
+}

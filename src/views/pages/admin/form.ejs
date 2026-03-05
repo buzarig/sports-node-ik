@@ -1,0 +1,47 @@
+<section class="section-form">
+    <div class="container">
+        <a href="/admin" class="back-link">&larr; До адмін-панелі</a>
+
+        <h1 class="page-title"><%= game ? '✏️ Редагувати гру' : '➕ Нова гра' %></h1>
+
+        <form 
+            action="<%= game ? '/admin/edit/' + game.id : '/admin/create' %>" 
+            method="POST" 
+            class="admin-form"
+        >
+            <div class="form-group">
+                <label for="date" class="form-label">Дата</label>
+                <input type="date" id="date" name="date" class="form-input" 
+                    value="<%= game ? game.date : '' %>" required />
+            </div>
+
+            <div class="form-group">
+                <label for="team1Id" class="form-label">Команда 1</label>
+                <select id="team1Id" name="team1Id" class="form-input" required>
+                    <option value="">— Оберіть —</option>
+                    <% teams.forEach(function(t) { %>
+                        <option value="<%= t.id %>" <%= (game && game.team1.id === t.id) ? 'selected' : '' %>><%= t.logo %> <%= t.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="team2Id" class="form-label">Команда 2</label>
+                <select id="team2Id" name="team2Id" class="form-input" required>
+                    <option value="">— Оберіть —</option>
+                    <% teams.forEach(function(t) { %>
+                        <option value="<%= t.id %>" <%= (game && game.team2.id === t.id) ? 'selected' : '' %>><%= t.logo %> <%= t.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="location" class="form-label">Місце проведення</label>
+                <input type="text" id="location" name="location" class="form-input" 
+                    value="<%= game ? game.location : '' %>" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg"><%= game ? 'Зберегти' : 'Створити' %></button>
+        </form>
+    </div>
+</section>

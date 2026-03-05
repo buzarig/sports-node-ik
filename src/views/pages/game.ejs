@@ -1,0 +1,44 @@
+<section class="section-game">
+    <div class="container">
+        <a href="/schedule" class="back-link">&larr; До розкладу</a>
+
+        <div class="game-card">
+            <div class="game-card__header">
+                <span class="game-date"><%= game.date %></span>
+                <span class="game-location">📍 <%= game.location %></span>
+            </div>
+
+            <div class="game-card__teams">
+                <div class="game-team">
+                    <span class="game-team__logo"><%= game.team1.logo %></span>
+                    <h2 class="game-team__name"><%= game.team1.name %></h2>
+                    <p class="game-team__city"><%= game.team1.city %></p>
+                </div>
+
+                <div class="game-vs">
+                    <% if (game.result) { %>
+                        <span class="game-score"><%= game.result.team1Score %></span>
+                        <span class="game-colon">:</span>
+                        <span class="game-score"><%= game.result.team2Score %></span>
+                    <% } else { %>
+                        <span class="game-vs-text">VS</span>
+                    <% } %>
+                </div>
+
+                <div class="game-team">
+                    <span class="game-team__logo"><%= game.team2.logo %></span>
+                    <h2 class="game-team__name"><%= game.team2.name %></h2>
+                    <p class="game-team__city"><%= game.team2.city %></p>
+                </div>
+            </div>
+
+            <div class="game-card__status">
+                <% if (game.result) { %>
+                    <span class="status-badge status-badge--finished">Завершено</span>
+                <% } else { %>
+                    <span class="status-badge status-badge--upcoming">Очікується</span>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</section>

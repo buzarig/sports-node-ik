@@ -1,0 +1,49 @@
+<section class="section-admin">
+    <div class="container">
+        <div class="page-title-block">
+            <h1 class="page-title">🛠 Адмін-панель</h1>
+            <a href="/admin/create" class="btn btn-primary">+ Нова гра</a>
+        </div>
+
+        <div class="schedule-table-wrapper">
+            <table class="schedule-table admin-table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Команда 1</th>
+                        <th></th>
+                        <th>Команда 2</th>
+                        <th>Місце</th>
+                        <th>Результат</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% schedule.forEach(function(game) { %>
+                    <tr class="schedule-row">
+                        <td class="cell-date"><%= game.date %></td>
+                        <td class="cell-team"><%= game.team1.logo %> <%= game.team1.name %></td>
+                        <td class="cell-vs">vs</td>
+                        <td class="cell-team"><%= game.team2.logo %> <%= game.team2.name %></td>
+                        <td class="cell-location"><%= game.location %></td>
+                        <td class="cell-result">
+                            <% if (game.result) { %>
+                                <span class="result-badge"><%= game.result.team1Score %> : <%= game.result.team2Score %></span>
+                            <% } else { %>
+                                <span class="result-pending">—</span>
+                            <% } %>
+                        </td>
+                        <td class="cell-actions">
+                            <a href="/admin/edit/<%= game.id %>" class="btn btn-sm btn-outline" title="Редагувати">✏️</a>
+                            <a href="/admin/result/<%= game.id %>" class="btn btn-sm btn-accent" title="Результат">📊</a>
+                            <form action="/admin/delete/<%= game.id %>" method="POST" style="display:inline" onsubmit="return confirm('Видалити гру?')">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Видалити">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

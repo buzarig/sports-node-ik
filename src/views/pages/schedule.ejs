@@ -1,0 +1,49 @@
+<section class="section-schedule">
+    <div class="container">
+        <div class="page-title-block">
+            <h1 class="page-title">⚽ Розклад змагань</h1>
+            <p class="page-subtitle">Усі заплановані та завершені матчі</p>
+        </div>
+
+        <div class="schedule-table-wrapper">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Команда 1</th>
+                        <th></th>
+                        <th>Команда 2</th>
+                        <th>Місце</th>
+                        <th>Результат</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% schedule.forEach(function(game) { %>
+                    <tr class="schedule-row">
+                        <td class="cell-date"><%= game.date %></td>
+                        <td class="cell-team">
+                            <span class="team-logo"><%= game.team1.logo %></span>
+                            <%= game.team1.name %>
+                        </td>
+                        <td class="cell-vs">vs</td>
+                        <td class="cell-team">
+                            <span class="team-logo"><%= game.team2.logo %></span>
+                            <%= game.team2.name %>
+                        </td>
+                        <td class="cell-location"><%= game.location %></td>
+                        <td class="cell-result">
+                            <% if (game.result) { %>
+                                <span class="result-badge">
+                                    <%= game.result.team1Score %> : <%= game.result.team2Score %>
+                                </span>
+                            <% } else { %>
+                                <span class="result-pending">Очікується</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
