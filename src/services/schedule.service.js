@@ -2,10 +2,7 @@ const teamRepo = require('../repositories/team.repository');
 const gameRepo = require('../repositories/game.repository');
 const resultRepo = require('../repositories/result.repository');
 
-/**
- * Повертає повний розклад із назвами команд та результатами
- * @returns {Promise<Array>}
- */
+
 async function getFullSchedule() {
     const teams = teamRepo.getAllSync();
 
@@ -30,11 +27,7 @@ async function getFullSchedule() {
     });
 }
 
-/**
- * Пошук ігор за назвою команди
- * @param {string} query
- * @returns {Promise<Array>}
- */
+
 async function searchByTeam(query) {
     const schedule = await getFullSchedule();
     const q = query.toLowerCase();
@@ -45,11 +38,7 @@ async function searchByTeam(query) {
     );
 }
 
-/**
- * Отримати одну гру за ID
- * @param {string} id
- * @returns {Promise<Object|null>}
- */
+
 async function getGameById(id) {
     const schedule = await getFullSchedule();
     return schedule.find((g) => g.id === id) || null;

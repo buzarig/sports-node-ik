@@ -3,7 +3,7 @@ const path = require('path');
 
 const GAMES_PATH = path.join(__dirname, '..', 'data', 'games.json');
 
-/* ---------- private helpers ---------- */
+
 function readGamesSync() {
     return JSON.parse(fs.readFileSync(GAMES_PATH, 'utf-8'));
 }
@@ -12,7 +12,7 @@ function writeGamesSync(games) {
     fs.writeFileSync(GAMES_PATH, JSON.stringify(games, null, 2), 'utf-8');
 }
 
-/* ====== 2. CALLBACK-based I/O ====== */
+
 
 function getAllCallback(cb) {
     fs.readFile(GAMES_PATH, 'utf-8', (err, data) => {

@@ -15,6 +15,7 @@
                         <th>Команда 2</th>
                         <th>Місце</th>
                         <th>Результат</th>
+                        <th>Дії</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,6 +40,9 @@
                             <% } else { %>
                                 <span class="result-pending">Очікується</span>
                             <% } %>
+                        </td>
+                        <td class="cell-actions">
+                            <a href="/game/<%= game.id %>" class="btn btn-sm btn-outline">Деталі</a>
                         </td>
                     </tr>
                     <% }); %>
