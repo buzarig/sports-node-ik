@@ -1,11 +1,5 @@
--- Лабораторна 4: PostgreSQL (Supabase).
--- Якщо в Node помилка "relation game_results does not exist" — цей скрипт ще не виконано
--- в ТОМУ Ж проєкті Supabase, що й DATABASE_URL у .env.
---
--- Supabase Dashboard → твій проєкт → SQL → New query → вставити ВЕСЬ файл → Run.
--- Перевірка: Table editor → мають з’явитися teams, games, game_results, result_audit.
---
--- Увага: DROP TABLE видаляє старі дані в цих таблицях (для чистої ініціалізації).
+
+
 
 DROP TABLE IF EXISTS result_audit CASCADE;
 DROP TABLE IF EXISTS game_results CASCADE;

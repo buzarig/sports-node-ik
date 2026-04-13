@@ -1,8 +1,6 @@
 /**
- * Демонстрація для звіту: успішна транзакція vs відкат при помилці.
  * Запуск: npm run db:demo-tx
  *
- * Передумова: виконано schema.sql, у .env задано DATABASE_URL.
  */
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
