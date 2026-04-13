@@ -2,15 +2,13 @@ const teamRepo = require('../repositories/team.repository');
 const gameRepo = require('../repositories/game.repository');
 const resultRepo = require('../repositories/result.repository');
 
-
 async function getFullSchedule() {
-    const teams = teamRepo.getAllSync();
+    const [teams, games, results] = await Promise.all([
+        teamRepo.getAll(),
+        gameRepo.getAll(),
+        resultRepo.getAll(),
+    ]);
 
-    const games = await gameRepo.getAllPromise();
-
-    const results = await resultRepo.getAllAsync();
-
-    // Збираємо дані разом
     return games.map((game) => {
         const team1 = teams.find((t) => t.id === game.team1Id);
         const team2 = teams.find((t) => t.id === game.team2Id);
@@ -20,13 +18,12 @@ async function getFullSchedule() {
             id: game.id,
             date: game.date,
             location: game.location,
-            team1: team1 || { name: 'Невідома', logo: '?' },
-            team2: team2 || { name: 'Невідома', logo: '?' },
+            team1: team1 || { id: game.team1Id, name: 'Невідома', logo: '?' },
+            team2: team2 || { id: game.team2Id, name: 'Невідома', logo: '?' },
             result: result || null,
         };
     });
 }
-
 
 async function searchByTeam(query) {
     const schedule = await getFullSchedule();
@@ -38,13 +35,12 @@ async function searchByTeam(query) {
     );
 }
 
-
 async function getGameById(id) {
     const schedule = await getFullSchedule();
     return schedule.find((g) => g.id === id) || null;
 }
 
-function createGame(data) {
+async function createGame(data) {
     const id = 'g' + Date.now();
     const game = {
         id,
@@ -53,11 +49,11 @@ function createGame(data) {
         team2Id: data.team2Id,
         location: data.location,
     };
-    return gameRepo.createSync(game);
+    return gameRepo.create(game);
 }
 
-function updateGame(id, data) {
-    return gameRepo.updateSync(id, {
+async function updateGame(id, data) {
+    return gameRepo.update(id, {
         date: data.date,
         team1Id: data.team1Id,
         team2Id: data.team2Id,
@@ -65,16 +61,16 @@ function updateGame(id, data) {
     });
 }
 
-function deleteGame(id) {
-    return gameRepo.deleteSync(id);
+async function deleteGame(id) {
+    return gameRepo.remove(id);
 }
 
 async function saveResult(gameId, team1Score, team2Score) {
-    return resultRepo.saveAsync(gameId, team1Score, team2Score);
+    return resultRepo.saveWithAudit(gameId, team1Score, team2Score);
 }
 
-function getAllTeams() {
-    return teamRepo.getAllSync();
+async function getAllTeams() {
+    return teamRepo.getAll();
 }
 
 module.exports = {

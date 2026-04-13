@@ -1,16 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+const { sql } = require('../db/db');
 
-const TEAMS_PATH = path.join(__dirname, '..', 'data', 'teams.json');
-
-function getAllSync() {
-    const raw = fs.readFileSync(TEAMS_PATH, 'utf-8');
-    return JSON.parse(raw);
+async function getAll() {
+    return sql`
+        SELECT id, name, city, logo
+        FROM teams
+        ORDER BY name
+    `;
 }
 
-function getByIdSync(id) {
-    const teams = getAllSync();
-    return teams.find((t) => t.id === id) || null;
+async function getById(id) {
+    const rows = await sql`
+        SELECT id, name, city, logo
+        FROM teams
+        WHERE id = ${id}
+    `;
+    return rows[0] || null;
 }
 
-module.exports = { getAllSync, getByIdSync };
+module.exports = { getAll, getById };

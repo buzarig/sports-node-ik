@@ -1,72 +1,108 @@
-const fs = require('fs');
-const path = require('path');
+const { sql } = require('../db/db');
 
-const GAMES_PATH = path.join(__dirname, '..', 'data', 'games.json');
-
-
-function readGamesSync() {
-    return JSON.parse(fs.readFileSync(GAMES_PATH, 'utf-8'));
+function mapGameRow(row) {
+    if (!row) return null;
+    let dateVal = row.date;
+    if (dateVal instanceof Date) {
+        dateVal = dateVal.toISOString().slice(0, 10);
+    } else if (typeof dateVal === 'string') {
+        dateVal = dateVal.slice(0, 10);
+    }
+    return {
+        id: row.id,
+        date: dateVal,
+        team1Id: row.team1Id,
+        team2Id: row.team2Id,
+        location: row.location,
+    };
 }
 
-function writeGamesSync(games) {
-    fs.writeFileSync(GAMES_PATH, JSON.stringify(games, null, 2), 'utf-8');
+async function getAll() {
+    const rows = await sql`
+        SELECT
+            id,
+            game_date AS date,
+            team1_id AS "team1Id",
+            team2_id AS "team2Id",
+            location
+        FROM games
+        ORDER BY game_date, id
+    `;
+    return rows.map(mapGameRow);
 }
 
+async function getById(id) {
+    const rows = await sql`
+        SELECT
+            id,
+            game_date AS date,
+            team1_id AS "team1Id",
+            team2_id AS "team2Id",
+            location
+        FROM games
+        WHERE id = ${id}
+    `;
+    return mapGameRow(rows[0]) || null;
+}
 
-
-function getAllCallback(cb) {
-    fs.readFile(GAMES_PATH, 'utf-8', (err, data) => {
-        if (err) return cb(err, null);
-        try {
-            cb(null, JSON.parse(data));
-        } catch (parseErr) {
-            cb(parseErr, null);
-        }
+async function create(game) {
+    return sql.begin(async (tx) => {
+        const rows = await tx`
+            INSERT INTO games (id, game_date, team1_id, team2_id, location)
+            VALUES (
+                ${game.id},
+                ${game.date},
+                ${game.team1Id},
+                ${game.team2Id},
+                ${game.location}
+            )
+            RETURNING
+                id,
+                game_date AS date,
+                team1_id AS "team1Id",
+                team2_id AS "team2Id",
+                location
+        `;
+        return mapGameRow(rows[0]);
     });
 }
 
-function getAllPromise() {
-    return fs.promises
-        .readFile(GAMES_PATH, 'utf-8')
-        .then((data) => JSON.parse(data));
+async function update(id, data) {
+    return sql.begin(async (tx) => {
+        const rows = await tx`
+            UPDATE games
+            SET
+                game_date = ${data.date},
+                team1_id = ${data.team1Id},
+                team2_id = ${data.team2Id},
+                location = ${data.location}
+            WHERE id = ${id}
+            RETURNING
+                id,
+                game_date AS date,
+                team1_id AS "team1Id",
+                team2_id AS "team2Id",
+                location
+        `;
+        return mapGameRow(rows[0]) || null;
+    });
 }
 
-function getByIdPromise(id) {
-    return getAllPromise().then(
-        (games) => games.find((g) => g.id === id) || null,
-    );
-}
-
-function createSync(game) {
-    const games = readGamesSync();
-    games.push(game);
-    writeGamesSync(games);
-    return game;
-}
-
-function updateSync(id, data) {
-    const games = readGamesSync();
-    const idx = games.findIndex((g) => g.id === id);
-    if (idx === -1) return null;
-    games[idx] = { ...games[idx], ...data };
-    writeGamesSync(games);
-    return games[idx];
-}
-
-function deleteSync(id) {
-    const games = readGamesSync();
-    const idx = games.findIndex((g) => g.id === id);
-    if (idx === -1) return false;
-    games.splice(idx, 1);
-    writeGamesSync(games);
-    return true;
+async function remove(id) {
+    return sql.begin(async (tx) => {
+        const rows = await tx`
+            DELETE FROM games
+            WHERE id = ${id}
+            RETURNING id
+        `;
+        return rows.length > 0;
+    });
 }
 
 module.exports = {
-    getAllCallback,
-    getAllPromise,
-    getByIdPromise,
-    createSync,
-    updateSync,
-    deleteSync,
+    getAll,
+    getById,
+    create,
+    update,
+    remove,
 };
