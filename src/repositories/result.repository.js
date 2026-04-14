@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { sequelize, Game, GameResult, ResultAudit } = require('../models');
 
 async function getAll() {
@@ -17,6 +18,19 @@ async function getByGameId(gameId) {
         team1Score: r.team1Score,
         team2Score: r.team2Score,
     };
+}
+
+async function getByGameIds(gameIds) {
+    if (!gameIds || gameIds.length === 0) return [];
+    const rows = await GameResult.findAll({
+        where: { gameId: { [Op.in]: gameIds } },
+        raw: true,
+    });
+    return rows.map((r) => ({
+        gameId: r.gameId,
+        team1Score: r.team1Score,
+        team2Score: r.team2Score,
+    }));
 }
 
 /**
@@ -65,5 +79,6 @@ async function saveWithAudit(gameId, team1Score, team2Score) {
 module.exports = {
     getAll,
     getByGameId,
+    getByGameIds,
     saveWithAudit,
 };

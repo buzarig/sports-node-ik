@@ -1,4 +1,5 @@
-const { sequelize, Game } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize, Game, Team } = require('../models');
 
 function mapGameRow(row) {
     if (!row) return null;
@@ -73,10 +74,76 @@ async function remove(id) {
     });
 }
 
+function clampLimit(limit, max = 100) {
+    const n = Number(limit);
+    if (!Number.isFinite(n) || n < 1) return 10;
+    return Math.min(max, Math.floor(n));
+}
+
+function clampPage(page) {
+    const n = Number(page);
+    if (!Number.isFinite(n) || n < 1) return 1;
+    return Math.floor(n);
+}
+
+/**
+ * Список ігор з пагінацією та фільтрами (дата, назва команди).
+ */
+async function findPaginated({ page = 1, limit = 10, teamName, dateFrom, dateTo } = {}) {
+    const lim = clampLimit(limit);
+    const pg = clampPage(page);
+    const offset = (pg - 1) * lim;
+
+    const conditions = [];
+
+    if (dateFrom || dateTo) {
+        const dateCond = {};
+        if (dateFrom) dateCond[Op.gte] = dateFrom;
+        if (dateTo) dateCond[Op.lte] = dateTo;
+        conditions.push({ gameDate: dateCond });
+    }
+
+    if (teamName && String(teamName).trim()) {
+        const like = `%${String(teamName).trim()}%`;
+        const matching = await Team.findAll({
+            where: { name: { [Op.iLike]: like } },
+            attributes: ['id'],
+            raw: true,
+        });
+        const teamIds = matching.map((t) => t.id);
+        if (teamIds.length === 0) {
+            return { rows: [], total: 0, page: pg, limit: lim };
+        }
+        conditions.push({
+            [Op.or]: [{ team1Id: { [Op.in]: teamIds } }, { team2Id: { [Op.in]: teamIds } }],
+        });
+    }
+
+    const where = conditions.length ? { [Op.and]: conditions } : {};
+
+    const { count, rows } = await Game.findAndCountAll({
+        where,
+        include: [
+            { model: Team, as: 'team1', attributes: ['id', 'name', 'city', 'logo'] },
+            { model: Team, as: 'team2', attributes: ['id', 'name', 'city', 'logo'] },
+        ],
+        order: [
+            ['gameDate', 'ASC'],
+            ['id', 'ASC'],
+        ],
+        limit: lim,
+        offset,
+        distinct: true,
+    });
+
+    return { rows, total: count, page: pg, limit: lim };
+}
+
 module.exports = {
     getAll,
     getById,
     create,
     update,
     remove,
+    findPaginated,
 };

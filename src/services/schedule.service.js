@@ -73,6 +73,60 @@ async function getAllTeams() {
     return teamRepo.getAll();
 }
 
+function formatGameDate(dateVal) {
+    let d = dateVal;
+    if (d instanceof Date) {
+        d = d.toISOString().slice(0, 10);
+    } else if (typeof d === 'string') {
+        d = d.slice(0, 10);
+    }
+    return d;
+}
+
+/**
+ * Сторінкований список ігор з фільтрами (REST): team/q, dateFrom, dateTo, page, limit.
+ */
+async function getGamesPaginated(query) {
+    const { rows, total, page, limit } = await gameRepo.findPaginated({
+        page: query.page,
+        limit: query.limit,
+        teamName: query.team || query.q,
+        dateFrom: query.dateFrom || undefined,
+        dateTo: query.dateTo || undefined,
+    });
+
+    const ids = rows.map((r) => (typeof r.get === 'function' ? r.get('id') : r.id));
+    const resultsList = await resultRepo.getByGameIds(ids);
+    const byGame = new Map(resultsList.map((r) => [r.gameId, r]));
+
+    const data = rows.map((row) => {
+        const plain = typeof row.get === 'function' ? row.get({ plain: true }) : row;
+        const res = byGame.get(plain.id);
+        return {
+            id: plain.id,
+            date: formatGameDate(plain.gameDate),
+            location: plain.location,
+            team1: plain.team1 || null,
+            team2: plain.team2 || null,
+            result: res
+                ? { team1Score: res.team1Score, team2Score: res.team2Score }
+                : null,
+        };
+    });
+
+    const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
+
+    return {
+        data,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages,
+        },
+    };
+}
+
 module.exports = {
     getFullSchedule,
     searchByTeam,
@@ -82,4 +136,5 @@ module.exports = {
     deleteGame,
     saveResult,
     getAllTeams,
+    getGamesPaginated,
 };
