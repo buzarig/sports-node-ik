@@ -1,101 +1,75 @@
-const { sql } = require('../db/db');
+const { sequelize, Game } = require('../models');
 
 function mapGameRow(row) {
     if (!row) return null;
-    let dateVal = row.date;
+    const plain = row.get ? row.get({ plain: true }) : row;
+    let dateVal = plain.gameDate;
     if (dateVal instanceof Date) {
         dateVal = dateVal.toISOString().slice(0, 10);
     } else if (typeof dateVal === 'string') {
         dateVal = dateVal.slice(0, 10);
     }
     return {
-        id: row.id,
+        id: plain.id,
         date: dateVal,
-        team1Id: row.team1Id,
-        team2Id: row.team2Id,
-        location: row.location,
+        team1Id: plain.team1Id,
+        team2Id: plain.team2Id,
+        location: plain.location,
     };
 }
 
 async function getAll() {
-    const rows = await sql`
-        SELECT
-            id,
-            game_date AS date,
-            team1_id AS "team1Id",
-            team2_id AS "team2Id",
-            location
-        FROM games
-        ORDER BY game_date, id
-    `;
+    const rows = await Game.findAll({
+        order: [
+            ['gameDate', 'ASC'],
+            ['id', 'ASC'],
+        ],
+    });
     return rows.map(mapGameRow);
 }
 
 async function getById(id) {
-    const rows = await sql`
-        SELECT
-            id,
-            game_date AS date,
-            team1_id AS "team1Id",
-            team2_id AS "team2Id",
-            location
-        FROM games
-        WHERE id = ${id}
-    `;
-    return mapGameRow(rows[0]) || null;
+    const row = await Game.findByPk(id);
+    return mapGameRow(row);
 }
 
 async function create(game) {
-    return sql.begin(async (tx) => {
-        const rows = await tx`
-            INSERT INTO games (id, game_date, team1_id, team2_id, location)
-            VALUES (
-                ${game.id},
-                ${game.date},
-                ${game.team1Id},
-                ${game.team2Id},
-                ${game.location}
-            )
-            RETURNING
-                id,
-                game_date AS date,
-                team1_id AS "team1Id",
-                team2_id AS "team2Id",
-                location
-        `;
-        return mapGameRow(rows[0]);
+    return sequelize.transaction(async (transaction) => {
+        const created = await Game.create(
+            {
+                id: game.id,
+                gameDate: game.date,
+                team1Id: game.team1Id,
+                team2Id: game.team2Id,
+                location: game.location,
+            },
+            { transaction },
+        );
+        return mapGameRow(created);
     });
 }
 
 async function update(id, data) {
-    return sql.begin(async (tx) => {
-        const rows = await tx`
-            UPDATE games
-            SET
-                game_date = ${data.date},
-                team1_id = ${data.team1Id},
-                team2_id = ${data.team2Id},
-                location = ${data.location}
-            WHERE id = ${id}
-            RETURNING
-                id,
-                game_date AS date,
-                team1_id AS "team1Id",
-                team2_id AS "team2Id",
-                location
-        `;
-        return mapGameRow(rows[0]) || null;
+    return sequelize.transaction(async (transaction) => {
+        const row = await Game.findByPk(id, { transaction });
+        if (!row) return null;
+        await row.update(
+            {
+                gameDate: data.date,
+                team1Id: data.team1Id,
+                team2Id: data.team2Id,
+                location: data.location,
+            },
+            { transaction },
+        );
+        return mapGameRow(row);
     });
 }
 
 async function remove(id) {
-    return sql.begin(async (tx) => {
-        const rows = await tx`
-            DELETE FROM games
-            WHERE id = ${id}
-            RETURNING id
-        `;
-        return rows.length > 0;
+    return sequelize.transaction(async (transaction) => {
+        const n = await Game.destroy({ where: { id }, transaction });
+        return n > 0;
     });
 }
 

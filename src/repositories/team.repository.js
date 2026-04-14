@@ -1,20 +1,16 @@
-const { sql } = require('../db/db');
+const { Team } = require('../models');
 
 async function getAll() {
-    return sql`
-        SELECT id, name, city, logo
-        FROM teams
-        ORDER BY name
-    `;
+    const rows = await Team.findAll({
+        order: [['name', 'ASC']],
+        raw: true,
+    });
+    return rows;
 }
 
 async function getById(id) {
-    const rows = await sql`
-        SELECT id, name, city, logo
-        FROM teams
-        WHERE id = ${id}
-    `;
-    return rows[0] || null;
+    const row = await Team.findByPk(id, { raw: true });
+    return row || null;
 }
 
 module.exports = { getAll, getById };
